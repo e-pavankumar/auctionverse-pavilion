@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const SignUp = () => {
   const [name, setName] = useState('');
@@ -30,8 +33,8 @@ const SignUp = () => {
       toast.success('Account created successfully');
       navigate('/');
     } catch (err) {
-      setError('Failed to create an account');
-      toast.error('Failed to create account');
+      setError(err.message || 'Failed to create an account');
+      toast.error(err.message || 'Failed to create account');
     } finally {
       setIsLoading(false);
     }
@@ -66,72 +69,70 @@ const SignUp = () => {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-foreground/80 mb-1">
+              <Label htmlFor="name" className="block text-sm font-medium text-foreground/80 mb-1">
                 Name
-              </label>
-              <input
+              </Label>
+              <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                className="block w-full"
                 placeholder="Your name"
               />
             </div>
             
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-1">
+              <Label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-1">
                 Email
-              </label>
-              <input
+              </Label>
+              <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                className="block w-full"
                 placeholder="you@example.com"
               />
             </div>
             
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground/80 mb-1">
+              <Label htmlFor="password" className="block text-sm font-medium text-foreground/80 mb-1">
                 Password
-              </label>
-              <input
+              </Label>
+              <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                className="block w-full"
                 placeholder="••••••••"
               />
             </div>
             
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground/80 mb-1">
+              <Label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground/80 mb-1">
                 Confirm Password
-              </label>
-              <input
+              </Label>
+              <Input
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                className="block w-full"
                 placeholder="••••••••"
               />
             </div>
             
             <div className="pt-2">
-              <button
+              <Button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full py-2.5 px-4 rounded-lg bg-primary text-white font-medium transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 button-animation ${
-                  isLoading ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
+                className="w-full"
               >
                 {isLoading ? (
                   <>
@@ -141,7 +142,7 @@ const SignUp = () => {
                 ) : (
                   'Create account'
                 )}
-              </button>
+              </Button>
             </div>
           </form>
           

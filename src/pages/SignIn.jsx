@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -22,8 +25,9 @@ const SignIn = () => {
       toast.success('Successfully signed in');
       navigate('/');
     } catch (err) {
-      setError('Failed to sign in. Please check your credentials.');
-      toast.error('Failed to sign in');
+      console.log('Sign in error:', err.message);
+      setError(err.message || 'Failed to sign in. Please check your credentials.');
+      toast.error(err.message || 'Failed to sign in');
     } finally {
       setIsLoading(false);
     }
@@ -58,46 +62,44 @@ const SignIn = () => {
           
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-1">
+              <Label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-1">
                 Email
-              </label>
-              <input
+              </Label>
+              <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                className="block w-full"
                 placeholder="you@example.com"
               />
             </div>
             
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="password" className="block text-sm font-medium text-foreground/80">
+                <Label htmlFor="password" className="block text-sm font-medium text-foreground/80">
                   Password
-                </label>
+                </Label>
                 <a href="#" className="text-xs text-primary hover:text-primary/80">
                   Forgot password?
                 </a>
               </div>
-              <input
+              <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                className="block w-full"
                 placeholder="••••••••"
               />
             </div>
             
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-2.5 px-4 rounded-lg bg-primary text-white font-medium transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 button-animation ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
+              className="w-full"
             >
               {isLoading ? (
                 <>
@@ -107,7 +109,7 @@ const SignIn = () => {
               ) : (
                 'Sign in'
               )}
-            </button>
+            </Button>
           </form>
           
           <p className="mt-6 text-center text-sm text-foreground/60">

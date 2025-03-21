@@ -6,8 +6,19 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
+    // Load registered users from localStorage
+    const storedUsers = localStorage.getItem('auctionUsers');
+    if (storedUsers) {
+      setUsers(JSON.parse(storedUsers));
+    } else {
+      // Initialize empty users array if none exists
+      localStorage.setItem('auctionUsers', JSON.stringify([]));
+      setUsers([]);
+    }
+
     // Check if user is logged in from localStorage
     const storedUser = localStorage.getItem('auctionUser');
     if (storedUser) {
@@ -16,28 +27,63 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // Mock sign up function
+  // Sign up function
   const signUp = (email, password, name) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       setTimeout(() => {
-        const newUser = { id: Date.now().toString(), email, name };
-        localStorage.setItem('auctionUser', JSON.stringify(newUser));
-        setCurrentUser(newUser);
-        resolve(newUser);
+        // Check if user already exists
+        const existingUser = users.find(user => user.email === email);
+        if (existingUser) {
+          reject(new Error('User with this email already exists'));
+          return;
+        }
+
+        const newUser = { 
+          id: Date.now().toString(), 
+          email, 
+          password, // In a real app, never store plain text passwords
+          name 
+        };
+        
+        // Update users array
+        const updatedUsers = [...users, newUser];
+        localStorage.setItem('auctionUsers', JSON.stringify(updatedUsers));
+        setUsers(updatedUsers);
+        
+        // Auto login after signup
+        const userInfo = { id: newUser.id, email: newUser.email, name: newUser.name };
+        localStorage.setItem('auctionUser', JSON.stringify(userInfo));
+        setCurrentUser(userInfo);
+        
+        resolve(userInfo);
       }, 1000);
     });
   };
 
-  // Mock sign in function
+  // Sign in function
   const signIn = (email, password) => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        // In a real app, you would validate credentials against a backend
-        // For now, let's just simulate login with any credentials
-        const mockUser = { id: '123', email, name: email.split('@')[0] };
-        localStorage.setItem('auctionUser', JSON.stringify(mockUser));
-        setCurrentUser(mockUser);
-        resolve(mockUser);
+        // Find user in the stored users array
+        const user = users.find(user => user.email === email);
+        
+        if (!user) {
+          reject(new Error('No user found with this email. Please sign up first.'));
+          return;
+        }
+        
+        // In a real app, you'd use proper password hashing and comparison
+        if (user.password !== password) {
+          reject(new Error('Invalid password'));
+          return;
+        }
+        
+        // Store user data in localStorage (except password)
+        const userInfo = { id: user.id, email: user.email, name: user.name };
+        localStorage.setItem('auctionUser', JSON.stringify(userInfo));
+        setCurrentUser(userInfo);
+        
+        resolve(userInfo);
       }, 1000);
     });
   };
@@ -51,6 +97,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     loading,
+    users,
     signUp,
     signIn,
     signOut
