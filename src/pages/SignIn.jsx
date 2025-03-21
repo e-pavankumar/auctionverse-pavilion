@@ -8,12 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { signIn } = useAuth();
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,12 +25,12 @@ const SignIn = () => {
     setIsLoading(true);
     
     try {
-      await signIn(email, password);
+      await signIn(formData.email, formData.password);
       toast.success('Successfully signed in');
       navigate('/');
     } catch (err) {
       console.log('Sign in error:', err.message);
-      setError(err.message || 'Failed to sign in. Please check your credentials.');
+      setError(err.message || 'Failed to sign in');
       toast.error(err.message || 'Failed to sign in');
     } finally {
       setIsLoading(false);
@@ -36,7 +40,7 @@ const SignIn = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Side - Form */}
-      <div className="flex-1 flex items-center justify-center p-8 md:p-12 lg:p-16">
+      <div className="flex-1 flex items-center justify-center p-8 md:p-12">
         <div className="w-full max-w-md animate-fade-up">
           <div className="text-center mb-8">
             <Link to="/" className="inline-block">
@@ -46,69 +50,48 @@ const SignIn = () => {
             </Link>
           </div>
           
-          <h2 className="text-2xl font-display font-bold tracking-tight mb-2">
-            Welcome back
-          </h2>
-          
-          <p className="text-foreground/60 mb-8">
-            Please sign in to your account to continue
-          </p>
+          <h2 className="text-2xl font-display font-bold tracking-tight mb-2">Welcome back</h2>
+          <p className="text-foreground/60 mb-8">Please sign in to your account to continue</p>
           
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg mb-6">
-              {error}
-            </div>
+            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg mb-6">{error}</div>
           )}
           
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <Label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-1">
-                Email
-              </Label>
+              <Label htmlFor="email" className="block text-sm font-medium mb-1">Email</Label>
               <Input
                 id="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
                 required
-                className="block w-full"
                 placeholder="you@example.com"
               />
             </div>
             
             <div>
               <div className="flex items-center justify-between mb-1">
-                <Label htmlFor="password" className="block text-sm font-medium text-foreground/80">
-                  Password
-                </Label>
-                <a href="#" className="text-xs text-primary hover:text-primary/80">
-                  Forgot password?
-                </a>
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <a href="#" className="text-xs text-primary hover:text-primary/80">Forgot password?</a>
               </div>
               <Input
                 id="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 required
-                className="block w-full"
                 placeholder="••••••••"
               />
             </div>
             
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full"
-            >
+            <Button type="submit" disabled={isLoading} className="w-full">
               {isLoading ? (
                 <>
                   <span className="inline-block mr-2 h-4 w-4 rounded-full border-2 border-t-white border-r-white border-b-transparent border-l-transparent animate-spin"></span>
                   Signing in...
                 </>
-              ) : (
-                'Sign in'
-              )}
+              ) : 'Sign in'}
             </Button>
           </form>
           

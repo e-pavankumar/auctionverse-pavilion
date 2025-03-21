@@ -13,11 +13,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!currentUser) {
-    return <Navigate to="/signin" />;
-  }
-
-  return children;
+  return currentUser ? children : <Navigate to="/signin" />;
 };
 
 export default ProtectedRoute;

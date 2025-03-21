@@ -8,19 +8,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const SignUp = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
@@ -29,7 +36,7 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
-      await signUp(email, password, name);
+      await signUp(formData.email, formData.password, formData.name);
       toast.success('Account created successfully');
       navigate('/');
     } catch (err) {
@@ -43,7 +50,7 @@ const SignUp = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Side - Form */}
-      <div className="flex-1 flex items-center justify-center p-8 md:p-12 lg:p-16">
+      <div className="flex-1 flex items-center justify-center p-8 md:p-12">
         <div className="w-full max-w-md animate-fade-up">
           <div className="text-center mb-8">
             <Link to="/" className="inline-block">
@@ -53,104 +60,46 @@ const SignUp = () => {
             </Link>
           </div>
           
-          <h2 className="text-2xl font-display font-bold tracking-tight mb-2">
-            Create your account
-          </h2>
-          
-          <p className="text-foreground/60 mb-8">
-            Join AuctionVerse to start bidding on exclusive items
-          </p>
+          <h2 className="text-2xl font-display font-bold tracking-tight mb-2">Create your account</h2>
+          <p className="text-foreground/60 mb-8">Join AuctionVerse to start bidding on exclusive items</p>
           
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg mb-6">
-              {error}
-            </div>
+            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg mb-6">{error}</div>
           )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name" className="block text-sm font-medium text-foreground/80 mb-1">
-                Name
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="block w-full"
-                placeholder="Your name"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-1">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="block w-full"
-                placeholder="you@example.com"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="password" className="block text-sm font-medium text-foreground/80 mb-1">
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="block w-full"
-                placeholder="••••••••"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground/80 mb-1">
-                Confirm Password
-              </Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="block w-full"
-                placeholder="••••••••"
-              />
-            </div>
+            {['name', 'email', 'password', 'confirmPassword'].map((field) => (
+              <div key={field}>
+                <Label htmlFor={field} className="block text-sm font-medium mb-1">
+                  {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
+                </Label>
+                <Input
+                  id={field}
+                  type={field.includes('assword') ? 'password' : field === 'email' ? 'email' : 'text'}
+                  value={formData[field]}
+                  onChange={handleChange}
+                  required
+                  className="block w-full"
+                  placeholder={field.includes('assword') ? '••••••••' : `Your ${field}`}
+                />
+              </div>
+            ))}
             
             <div className="pt-2">
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full"
-              >
+              <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? (
                   <>
                     <span className="inline-block mr-2 h-4 w-4 rounded-full border-2 border-t-white border-r-white border-b-transparent border-l-transparent animate-spin"></span>
                     Creating account...
                   </>
-                ) : (
-                  'Create account'
-                )}
+                ) : 'Create account'}
               </Button>
             </div>
           </form>
           
           <p className="mt-6 text-center text-sm text-foreground/60">
             Already have an account?{' '}
-            <Link to="/signin" className="text-primary hover:text-primary/80 font-medium">
-              Sign in
-            </Link>
+            <Link to="/signin" className="text-primary hover:text-primary/80 font-medium">Sign in</Link>
           </p>
         </div>
       </div>
@@ -164,22 +113,17 @@ const SignUp = () => {
               Create an account to access exclusive auctions, track your bids, and connect with other collectors.
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-white/50 backdrop-blur rounded-lg">
-                <div className="text-primary text-lg font-semibold mb-1">100+</div>
-                <div className="text-sm text-foreground/70">Daily Auctions</div>
-              </div>
-              <div className="p-3 bg-white/50 backdrop-blur rounded-lg">
-                <div className="text-primary text-lg font-semibold mb-1">10k+</div>
-                <div className="text-sm text-foreground/70">Active Bidders</div>
-              </div>
-              <div className="p-3 bg-white/50 backdrop-blur rounded-lg">
-                <div className="text-primary text-lg font-semibold mb-1">99%</div>
-                <div className="text-sm text-foreground/70">Secure Transactions</div>
-              </div>
-              <div className="p-3 bg-white/50 backdrop-blur rounded-lg">
-                <div className="text-primary text-lg font-semibold mb-1">24/7</div>
-                <div className="text-sm text-foreground/70">Customer Support</div>
-              </div>
+              {[
+                {label: 'Daily Auctions', value: '100+'},
+                {label: 'Active Bidders', value: '10k+'},
+                {label: 'Secure Transactions', value: '99%'},
+                {label: 'Customer Support', value: '24/7'}
+              ].map((item, i) => (
+                <div key={i} className="p-3 bg-white/50 backdrop-blur rounded-lg">
+                  <div className="text-primary text-lg font-semibold mb-1">{item.value}</div>
+                  <div className="text-sm text-foreground/70">{item.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
