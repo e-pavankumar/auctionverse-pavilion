@@ -1,82 +1,77 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
+
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    // Initialize from localStorage
-    const storedUsers = JSON.parse(localStorage.getItem('auctionUsers') || '[]');
-    setUsers(storedUsers);
-    
-    const storedUser = localStorage.getItem('auctionUser');
-    if (storedUser) setCurrentUser(JSON.parse(storedUser));
-    
+    // Check if user exists in localStorage
+    const user = localStorage.getItem('user');
+    if (user) {
+      setCurrentUser(JSON.parse(user));
+    }
     setLoading(false);
   }, []);
 
-  // Helper to update localStorage
-  const updateLocalStorage = (key, data) => {
-    localStorage.setItem(key, JSON.stringify(data));
-  };
-
   const signUp = (email, password, name) => {
-    return new Promise((resolve, reject) => {
-      // Check if user exists
-      if (users.find(user => user.email === email)) {
-        return reject(new Error('User with this email already exists'));
-      }
-
-      const newUser = { id: Date.now().toString(), email, password, name };
-      const updatedUsers = [...users, newUser];
-      
-      // Update both states and localStorage
-      updateLocalStorage('auctionUsers', updatedUsers);
-      setUsers(updatedUsers);
-      
-      // Auto login after signup
-      const userInfo = { id: newUser.id, email: newUser.email, name: newUser.name };
-      updateLocalStorage('auctionUser', userInfo);
-      setCurrentUser(userInfo);
-      
-      resolve(userInfo);
-    });
+    // In a real app, this would call an API
+    const newUser = { id: Date.now().toString(), email, name };
+    
+    // Store users in localStorage
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    
+    // Check if email already exists
+    if (users.some(user => user.email === email)) {
+      throw new Error('Email already in use');
+    }
+    
+    // Add user to users array with password
+    users.push({ ...newUser, password });
+    localStorage.setItem('users', JSON.stringify(users));
+    
+    // Set current user without password
+    localStorage.setItem('user', JSON.stringify(newUser));
+    setCurrentUser(newUser);
   };
 
   const signIn = (email, password) => {
-    return new Promise((resolve, reject) => {
-      const user = users.find(user => user.email === email);
-      
-      if (!user) {
-        return reject(new Error('No user found with this email. Please sign up first.'));
-      }
-      
-      if (user.password !== password) {
-        return reject(new Error('Invalid password'));
-      }
-      
-      const userInfo = { id: user.id, email: user.email, name: user.name };
-      updateLocalStorage('auctionUser', userInfo);
-      setCurrentUser(userInfo);
-      
-      resolve(userInfo);
-    });
+    // Get users from localStorage
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (!user) {
+      throw new Error('Invalid email or password');
+    }
+    
+    // Store user without password
+    const { password: _, ...userWithoutPassword } = user;
+    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+    setCurrentUser(userWithoutPassword);
   };
 
   const signOut = () => {
-    localStorage.removeItem('auctionUser');
+    localStorage.removeItem('user');
     setCurrentUser(null);
   };
 
+  const value = {
+    currentUser,
+    loading,
+    signUp,
+    signIn,
+    signOut
+  };
+
   return (
-    <AuthContext.Provider value={{ currentUser, loading, users, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);
