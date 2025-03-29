@@ -1,5 +1,6 @@
 
 import { createContext, useState, useContext, useEffect } from 'react';
+import { toast } from 'sonner';
 
 const AuthContext = createContext();
 
@@ -13,10 +14,9 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState('');
   
   // Fix the API URL to work both locally and in production
-  // Remove the port from production URL as it's causing connection issues
   const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:5000/api' 
-    : `/api`;
+    : '/api';
   
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -52,6 +52,7 @@ export const AuthProvider = ({ children }) => {
   const signUp = async (email, password, name) => {
     try {
       console.log('Signing up with:', { email, name });
+      
       const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
@@ -60,12 +61,21 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password, name })
       });
       
-      const data = await response.json();
-      
+      // Check if response exists before trying to parse JSON
       if (!response.ok) {
-        throw new Error(data.message || 'Error creating account');
+        // Try to get error message from response
+        let errorMsg;
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message;
+        } catch (e) {
+          // If parsing fails, use status text
+          errorMsg = `Request failed with status ${response.status} (${response.statusText})`;
+        }
+        throw new Error(errorMsg || 'Error creating account');
       }
       
+      const data = await response.json();
       localStorage.setItem('token', data.token);
       setCurrentUser(data.user);
       return data;
@@ -89,12 +99,21 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password })
       });
       
-      const data = await response.json();
-      
+      // Check if response exists before trying to parse JSON
       if (!response.ok) {
-        throw new Error(data.message || 'Invalid login credentials');
+        // Try to get error message from response
+        let errorMsg;
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message;
+        } catch (e) {
+          // If parsing fails, use status text
+          errorMsg = `Request failed with status ${response.status} (${response.statusText})`;
+        }
+        throw new Error(errorMsg || 'Invalid login credentials');
       }
       
+      const data = await response.json();
       localStorage.setItem('token', data.token);
       setCurrentUser(data.user);
       return data;

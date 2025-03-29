@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +27,7 @@ const SignUp = () => {
     
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
     
@@ -39,7 +41,8 @@ const SignUp = () => {
       navigate('/');
     } catch (err) {
       console.error('Sign up error:', err);
-      const errorMessage = err.message || 'Connection error. Please ensure the backend server is running.';
+      const errorMessage = err.message || 
+        'Connection error. Please ensure the backend server is running.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

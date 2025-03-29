@@ -33,14 +33,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Middleware for parsing JSON - needs to be before routes
 app.use(express.json());
+
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
 
 // Serve static files if in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'dist')));
 }
 
-// Routes
+// Routes - make sure the paths are correct
 app.use('/api/auth', authRoutes);
 app.use('/api/auctions', auctionRoutes);
 
@@ -50,7 +57,7 @@ app.get('/api', (req, res) => {
 });
 
 // MongoDB Connection with better error handling
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => {
     console.error('MongoDB connection error:', err);
@@ -63,6 +70,12 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
   });
 }
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({ message: err.message || 'Internal server error' });
+});
 
 // Start server
 app.listen(PORT, () => {
