@@ -1,5 +1,8 @@
 
-const API_URL = 'http://localhost:5000/api';
+// Use the same API URL pattern as in AuthContext for consistency
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5000/api' 
+  : '/api';
 
 export const fetchAuctions = async () => {
   try {

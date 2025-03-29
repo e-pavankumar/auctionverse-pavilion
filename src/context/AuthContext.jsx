@@ -1,3 +1,4 @@
+
 import { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
@@ -11,9 +12,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
+  // Fix the API URL to work both locally and in production
+  // Remove the port from production URL as it's causing connection issues
   const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000/api'
-    : `${window.location.protocol}//${window.location.hostname}:5000/api`;
+    ? 'http://localhost:5000/api' 
+    : `/api`;
   
   useEffect(() => {
     const token = localStorage.getItem('token');
