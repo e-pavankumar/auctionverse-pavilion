@@ -14,9 +14,9 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState('');
   
   // Fix the API URL to work both locally and in production
-  const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000/api' 
-    : '/api';
+  const API_URL = import.meta.env.PROD 
+    ? '/api' 
+    : 'http://localhost:5000/api';
   
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -61,18 +61,18 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password, name })
       });
       
-      // Check if response exists before trying to parse JSON
       if (!response.ok) {
-        // Try to get error message from response
-        let errorMsg;
+        let errorMsg = 'Error creating account';
+        
+        // Check if we can get a more specific error message
         try {
           const errorData = await response.json();
-          errorMsg = errorData.message;
+          errorMsg = errorData.message || `Server error: ${response.status}`;
         } catch (e) {
-          // If parsing fails, use status text
-          errorMsg = `Request failed with status ${response.status} (${response.statusText})`;
+          errorMsg = `Server error (${response.status}): The server might not be running or the route is not available`;
         }
-        throw new Error(errorMsg || 'Error creating account');
+        
+        throw new Error(errorMsg);
       }
       
       const data = await response.json();
@@ -89,7 +89,6 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     try {
       console.log('Signing in with:', { email });
-      console.log('API URL:', `${API_URL}/auth/login`);
       
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
@@ -99,18 +98,18 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password })
       });
       
-      // Check if response exists before trying to parse JSON
       if (!response.ok) {
-        // Try to get error message from response
-        let errorMsg;
+        let errorMsg = 'Invalid login credentials';
+        
+        // Check if we can get a more specific error message
         try {
           const errorData = await response.json();
-          errorMsg = errorData.message;
+          errorMsg = errorData.message || `Server error: ${response.status}`;
         } catch (e) {
-          // If parsing fails, use status text
-          errorMsg = `Request failed with status ${response.status} (${response.statusText})`;
+          errorMsg = `Server error (${response.status}): The server might not be running or the route is not available`;
         }
-        throw new Error(errorMsg || 'Invalid login credentials');
+        
+        throw new Error(errorMsg);
       }
       
       const data = await response.json();

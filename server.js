@@ -42,30 +42,31 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files if in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
-}
-
-// Routes - make sure the paths are correct
-app.use('/api/auth', authRoutes);
-app.use('/api/auctions', auctionRoutes);
-
 // API root route
 app.get('/api', (req, res) => {
   res.send('AuctionVerse API is running');
 });
 
-// MongoDB Connection with better error handling
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1); // Exit if unable to connect to database
-  });
+// Routes - make sure they are registered AFTER middleware
+app.use('/api/auth', authRoutes);
+app.use('/api/auctions', auctionRoutes);
 
-// For React Router, send all other requests to React app
+// MongoDB Connection with better error handling
+mongoose.connect(process.env.MONGODB_URI, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
+})
+.then(() => console.log('Connected to MongoDB Atlas'))
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1); // Exit if unable to connect to database
+});
+
+// Serve static files if in production
 if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+  
+  // For React Router, send all other requests to React app
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
   });

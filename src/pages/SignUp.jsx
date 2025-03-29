@@ -42,7 +42,7 @@ const SignUp = () => {
     } catch (err) {
       console.error('Sign up error:', err);
       const errorMessage = err.message || 
-        'Connection error. Please ensure the backend server is running.';
+        'Connection error. Please ensure the backend server is running on port 5000.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -104,6 +104,11 @@ const SignUp = () => {
             Already have an account?{' '}
             <Link to="/signin" className="text-primary hover:text-primary/80 font-medium">Sign in</Link>
           </p>
+          
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+            <p className="font-medium">📢 Important:</p>
+            <p>Make sure the backend server is running on port 5000 for authentication to work.</p>
+          </div>
         </div>
       </div>
       
