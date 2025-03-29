@@ -22,13 +22,15 @@ const SignIn = () => {
     setIsLoading(true);
     
     try {
+      console.log('Attempting to sign in with:', formData.email);
       await signIn(formData.email, formData.password);
       toast.success('Successfully signed in');
       navigate('/');
     } catch (err) {
-      console.log('Sign in error:', err.message);
-      setError(err.message || 'Failed to sign in');
-      toast.error(err.message || 'Failed to sign in');
+      console.error('Sign in error:', err);
+      const errorMessage = err.message || 'Connection error. Please ensure the backend server is running.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -1,4 +1,3 @@
-
 import { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
@@ -12,7 +11,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api'
+    : `${window.location.protocol}//${window.location.hostname}:5000/api`;
   
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -47,6 +48,7 @@ export const AuthProvider = ({ children }) => {
   
   const signUp = async (email, password, name) => {
     try {
+      console.log('Signing up with:', { email, name });
       const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
@@ -65,6 +67,7 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(data.user);
       return data;
     } catch (error) {
+      console.error('Sign up error:', error);
       setError(error.message);
       throw error;
     }
@@ -72,6 +75,9 @@ export const AuthProvider = ({ children }) => {
   
   const signIn = async (email, password) => {
     try {
+      console.log('Signing in with:', { email });
+      console.log('API URL:', `${API_URL}/auth/login`);
+      
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -90,6 +96,7 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(data.user);
       return data;
     } catch (error) {
+      console.error('Sign in error:', error);
       setError(error.message);
       throw error;
     }

@@ -33,12 +33,15 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
+      console.log('Attempting to sign up with:', formData.email);
       await signUp(formData.email, formData.password, formData.name);
       toast.success('Account created successfully');
       navigate('/');
     } catch (err) {
-      setError(err.message || 'Failed to create an account');
-      toast.error(err.message || 'Failed to create account');
+      console.error('Sign up error:', err);
+      const errorMessage = err.message || 'Connection error. Please ensure the backend server is running.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
