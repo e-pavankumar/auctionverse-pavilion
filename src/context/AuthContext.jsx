@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
 
@@ -10,65 +10,105 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState('');
+  
+  const API_URL = 'http://localhost:5000/api';
+  
   useEffect(() => {
-    // Check if user exists in localStorage
-    const user = localStorage.getItem('user');
-    if (user) {
-      setCurrentUser(JSON.parse(user));
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchCurrentUser(token);
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
-
-  const signUp = (email, password, name) => {
-    // In a real app, this would call an API
-    const newUser = { id: Date.now().toString(), email, name };
-    
-    // Store users in localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Check if email already exists
-    if (users.some(user => user.email === email)) {
-      throw new Error('Email already in use');
+  
+  const fetchCurrentUser = async (token) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUser(data.user);
+      } else {
+        // Token invalid
+        localStorage.removeItem('token');
+      }
+    } catch (error) {
+      console.error('Fetch user error:', error);
+    } finally {
+      setLoading(false);
     }
-    
-    // Add user to users array with password
-    users.push({ ...newUser, password });
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    // Set current user without password
-    localStorage.setItem('user', JSON.stringify(newUser));
-    setCurrentUser(newUser);
   };
-
-  const signIn = (email, password) => {
-    // Get users from localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (!user) {
-      throw new Error('Invalid email or password');
+  
+  const signUp = async (email, password, name) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password, name })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Error creating account');
+      }
+      
+      localStorage.setItem('token', data.token);
+      setCurrentUser(data.user);
+      return data;
+    } catch (error) {
+      setError(error.message);
+      throw error;
     }
-    
-    // Store user without password
-    const { password: _, ...userWithoutPassword } = user;
-    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-    setCurrentUser(userWithoutPassword);
   };
-
+  
+  const signIn = async (email, password) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid login credentials');
+      }
+      
+      localStorage.setItem('token', data.token);
+      setCurrentUser(data.user);
+      return data;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    }
+  };
+  
   const signOut = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     setCurrentUser(null);
   };
-
+  
   const value = {
     currentUser,
     loading,
+    error,
     signUp,
     signIn,
     signOut
   };
-
+  
   return (
     <AuthContext.Provider value={value}>
       {children}
