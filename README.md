@@ -1,36 +1,50 @@
 
-# AuctionVerse Pavilion
+# AuctionVerse - Online Auction Platform
+
+## Project Structure
+
+This project is divided into two main directories:
+
+- `frontend` - React application built with Vite
+- `backend` - Express.js server with MongoDB database
 
 ## Getting Started
 
-This project is a modern auction platform built with React and modern web technologies.
-
-## Development
-
-To work locally:
+### Running the Backend
 
 ```sh
-# Clone the repository
-git clone <YOUR_REPO_URL>
-
-# Navigate to project directory
-cd auctionverse-pavilion
-
-# Install dependencies
+cd backend
 npm install
-
-# Start development server
 npm run dev
 ```
 
+The backend server will run on port 5000 by default.
+
+### Running the Frontend
+
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend development server will run on port 5173 by default.
+
 ## Technologies Used
 
-This project is built with:
+### Backend
+- Express.js
+- MongoDB Atlas
+- Mongoose
+- JWT Authentication
+- bcrypt.js for password hashing
 
-- Vite
+### Frontend
 - React
+- Vite
+- React Router
 - Tailwind CSS
-- Custom UI Components
+- Shadcn UI Components
 
 ## Features
 
@@ -39,12 +53,33 @@ This project is built with:
 - User authentication
 - Mobile responsive design
 
+## Database Connection
+
+This application uses MongoDB Atlas for database storage. You can also connect to it using MongoDB Compass with the connection string provided in the backend `.env` file.
+
+## API Endpoints
+
+### Authentication
+- POST `/api/auth/register` - Register a new user
+- POST `/api/auth/login` - Login a user
+- GET `/api/auth/me` - Get current user
+
+### Auctions
+- GET `/api/auctions` - Get all auctions
+- GET `/api/auctions/:id` - Get a specific auction
+- POST `/api/auctions` - Create a new auction (auth required)
+- POST `/api/auctions/:id/bid` - Place a bid on an auction (auth required)
+
 ## Deployment
 
-To deploy the application, run:
+For deployment, build both the frontend and backend:
 
 ```sh
+# Build frontend
+cd frontend
 npm run build
-```
 
-This will create optimized production files in the `dist` directory that can be deployed to any static hosting service.
+# Start backend in production mode
+cd ../backend
+NODE_ENV=production npm start
+```

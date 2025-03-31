@@ -62,13 +62,14 @@ mongoose.connect(process.env.MONGODB_URI, {
   process.exit(1); // Exit if unable to connect to database
 });
 
-// Serve static files if in production
+// Serve static files from the frontend build folder in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
+  // Serve frontend static files from the frontend/dist directory
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
   
-  // For React Router, send all other requests to React app
+  // For React Router, send all frontend requests to React app
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
   });
 }
 
