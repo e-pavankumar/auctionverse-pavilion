@@ -30,6 +30,26 @@ npm run dev
 
 The frontend development server will run on port 5173 by default.
 
+## Environment Variables
+
+You'll need to set up the following environment variables:
+
+### Backend (.env file)
+- `MONGODB_URI` - MongoDB connection string
+- `JWT_SECRET` - Secret for JWT token generation
+- `GOOGLE_CLIENT_ID` - Google OAuth client ID
+
+### Frontend (.env.local file)
+- `VITE_GOOGLE_CLIENT_ID` - Google OAuth client ID (same as in backend)
+
+## Features
+
+- User authentication (email/password and Google Sign-In)
+- Browse auctions
+- Real-time bidding
+- User dashboard
+- Mobile responsive design
+
 ## Technologies Used
 
 ### Backend
@@ -38,30 +58,22 @@ The frontend development server will run on port 5173 by default.
 - Mongoose
 - JWT Authentication
 - bcrypt.js for password hashing
+- Google Auth Library for Google Sign-In
 
 ### Frontend
 - React
 - Vite
 - React Router
 - Tailwind CSS
-- Shadcn UI Components
-
-## Features
-
-- Browse auctions
-- Real-time bidding
-- User authentication
-- Mobile responsive design
-
-## Database Connection
-
-This application uses MongoDB Atlas for database storage. You can also connect to it using MongoDB Compass with the connection string provided in the backend `.env` file.
+- React Icons
+- Sonner for toast notifications
 
 ## API Endpoints
 
 ### Authentication
 - POST `/api/auth/register` - Register a new user
 - POST `/api/auth/login` - Login a user
+- POST `/api/auth/google` - Sign in with Google
 - GET `/api/auth/me` - Get current user
 
 ### Auctions
@@ -69,17 +81,3 @@ This application uses MongoDB Atlas for database storage. You can also connect t
 - GET `/api/auctions/:id` - Get a specific auction
 - POST `/api/auctions` - Create a new auction (auth required)
 - POST `/api/auctions/:id/bid` - Place a bid on an auction (auth required)
-
-## Deployment
-
-For deployment, build both the frontend and backend:
-
-```sh
-# Build frontend
-cd frontend
-npm run build
-
-# Start backend in production mode
-cd ../backend
-NODE_ENV=production npm start
-```

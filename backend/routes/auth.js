@@ -3,8 +3,10 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { OAuth2Client } = require('google-auth-library');
 
 const router = express.Router();
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Register a new user
 router.post('/register', async (req, res) => {
@@ -82,6 +84,55 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Google Sign-In
+router.post('/google', async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+    
+    const { name, email, picture } = ticket.getPayload();
+    
+    // Check if user exists
+    let user = await User.findOne({ email });
+    
+    if (!user) {
+      // Create new user if not exists
+      // Generate a random password as they're using Google to sign in
+      const password = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      
+      user = new User({
+        name,
+        email,
+        password,
+        profilePicture: picture,
+        authProvider: 'google'
+      });
+      
+      await user.save();
+    }
+    
+    // Generate token
+    const jwtToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'fallbacksecretdonotuseinproduction', { expiresIn: '7d' });
+    
+    res.json({
+      token: jwtToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profilePicture: user.profilePicture
+      }
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    res.status(500).json({ message: 'Server error with Google authentication' });
+  }
+});
+
 // Get current user
 router.get('/me', auth, async (req, res) => {
   try {
@@ -89,7 +140,8 @@ router.get('/me', auth, async (req, res) => {
       user: {
         id: req.user._id,
         name: req.user.name,
-        email: req.user.email
+        email: req.user.email,
+        profilePicture: req.user.profilePicture
       }
     });
   } catch (error) {

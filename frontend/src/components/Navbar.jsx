@@ -77,7 +77,15 @@ const Navbar = () => {
                 </button>
                 
                 <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+                  {currentUser.profilePicture ? (
+                    <img 
+                      src={currentUser.profilePicture} 
+                      alt={currentUser.name} 
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    currentUser.name.charAt(0).toUpperCase()
+                  )}
                 </div>
               </>
             ) : (

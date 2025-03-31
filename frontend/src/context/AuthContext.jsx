@@ -1,5 +1,5 @@
 
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
 const AuthContext = createContext();
@@ -122,11 +122,46 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   };
+
+  const googleSignIn = async (token) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token })
+      });
+      
+      if (!response.ok) {
+        let errorMsg = 'Google sign in failed';
+        
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message || `Server error: ${response.status}`;
+        } catch (e) {
+          errorMsg = `Server error (${response.status})`;
+        }
+        
+        throw new Error(errorMsg);
+      }
+      
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      setCurrentUser(data.user);
+      return data;
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      setError(error.message);
+      throw error;
+    }
+  };
   
-  const signOut = () => {
+  const signOut = useCallback(() => {
     localStorage.removeItem('token');
     setCurrentUser(null);
-  };
+    toast.success('Successfully signed out');
+  }, []);
   
   const value = {
     currentUser,
@@ -134,6 +169,7 @@ export const AuthProvider = ({ children }) => {
     error,
     signUp,
     signIn,
+    googleSignIn,
     signOut
   };
   
