@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -27,7 +26,6 @@ const SignUp = () => {
     
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
-      toast.error('Passwords do not match');
       return;
     }
     
@@ -35,16 +33,12 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
-      console.log('Attempting to sign up with:', formData.email);
       await signUp(formData.email, formData.password, formData.name);
       toast.success('Account created successfully');
       navigate('/');
     } catch (err) {
-      console.error('Sign up error:', err);
-      const errorMessage = err.message || 
-        'Connection error. Please ensure the backend server is running on port 5000.';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      setError(err.message || 'Failed to create an account');
+      toast.error(err.message || 'Failed to create account');
     } finally {
       setIsLoading(false);
     }
@@ -104,11 +98,6 @@ const SignUp = () => {
             Already have an account?{' '}
             <Link to="/signin" className="text-primary hover:text-primary/80 font-medium">Sign in</Link>
           </p>
-          
-          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
-            <p className="font-medium">📢 Important:</p>
-            <p>Make sure the backend server is running on port 5000 for authentication to work.</p>
-          </div>
         </div>
       </div>
       
