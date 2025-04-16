@@ -20,14 +20,20 @@ app.use('/api/auctions', auctionRoutes);
 // MongoDB Connection
 const connectDB = async () => {
   try {
+    console.log('Attempting to connect to MongoDB...');
+    console.log('MongoDB URI configured:', process.env.MONGODB_URI ? 'Yes' : 'No');
+    
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB connected...');
+    console.log('MongoDB connected successfully');
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
+    // Print more details about the error for debugging
+    console.error('Error details:', err);
     process.exit(1);
   }
 };
 
+// Connect to MongoDB
 connectDB();
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

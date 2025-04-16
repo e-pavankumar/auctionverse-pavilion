@@ -3,7 +3,7 @@ import apiClient from './apiClient';
 import { signInUser as mockSignIn, signUpUser as mockSignUp, getCurrentUser as mockGetCurrentUser } from '../../backend/api/auth';
 
 // Use mock API instead of real API for development
-const USE_MOCK_API = true;
+const USE_MOCK_API = false; // Changed to false to use the real API that connects to MongoDB
 
 // Sign in user
 export const signInUser = async (email, password) => {
@@ -16,6 +16,7 @@ export const signInUser = async (email, password) => {
     } else {
       // Use real API
       response = await apiClient.post('/auth/signin', { email, password });
+      response = response.data; // Ensure we return the correct format
     }
     
     // Store token in localStorage
@@ -24,7 +25,7 @@ export const signInUser = async (email, password) => {
     return response;
   } catch (error) {
     console.error('Sign in error:', error);
-    throw new Error(error.message || 'Failed to sign in');
+    throw new Error(error.response?.data?.message || error.message || 'Failed to sign in');
   }
 };
 
@@ -38,7 +39,10 @@ export const signUpUser = async (email, password, name) => {
       response = await mockSignUp(email, password, name);
     } else {
       // Use real API
+      console.log('Sending signup request with:', { email, password, name });
       response = await apiClient.post('/auth/signup', { email, password, name });
+      console.log('Signup response:', response);
+      response = response.data; // Ensure we return the correct format
     }
     
     // Store token in localStorage
@@ -47,7 +51,7 @@ export const signUpUser = async (email, password, name) => {
     return response;
   } catch (error) {
     console.error('Signup API error:', error);
-    throw new Error(error.message || 'Failed to sign up');
+    throw new Error(error.response?.data?.message || error.message || 'Failed to sign up');
   }
 };
 
@@ -73,7 +77,7 @@ export const getCurrentUser = async () => {
     }
   } catch (error) {
     console.error('Get current user error:', error);
-    throw new Error(error.message || 'Failed to get user');
+    throw new Error(error.response?.data?.message || error.message || 'Failed to get user');
   }
 };
 

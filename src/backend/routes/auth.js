@@ -13,7 +13,9 @@ const verifyToken = (req, res, next) => {
   }
   
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Use a default secret if JWT_SECRET is not defined
+    const jwtSecret = process.env.JWT_SECRET || 'fallback_jwt_secret_for_development';
+    const decoded = jwt.verify(token, jwtSecret);
     req.user = decoded.user;
     next();
   } catch (err) {
@@ -27,10 +29,13 @@ const verifyToken = (req, res, next) => {
 router.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
   
+  console.log('Received signup request with data:', { name, email, passwordLength: password ? password.length : 0 });
+  
   try {
     // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
+      console.log('User already exists with email:', email);
       return res.status(400).json({ message: 'User with this email already exists' });
     }
     
@@ -38,10 +43,18 @@ router.post('/signup', async (req, res) => {
     user = new User({
       name,
       email,
-      password
+      password  // Will be hashed by the pre-save middleware in the User model
     });
     
+    console.log('Created new user object:', { 
+      id: user._id,
+      name: user.name,
+      email: user.email
+    });
+    
+    // Save the user to the database
     await user.save();
+    console.log('User saved to database successfully');
     
     // Create JWT token
     const payload = {
@@ -50,12 +63,19 @@ router.post('/signup', async (req, res) => {
       }
     };
     
+    // Use a default secret if JWT_SECRET is not defined
+    const jwtSecret = process.env.JWT_SECRET || 'fallback_jwt_secret_for_development';
+    
     jwt.sign(
       payload,
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: '7d' },
       (err, token) => {
-        if (err) throw err;
+        if (err) {
+          console.error('JWT sign error:', err);
+          throw err;
+        }
+        console.log('JWT token generated successfully');
         res.json({ 
           token,
           user: {
@@ -67,8 +87,8 @@ router.post('/signup', async (req, res) => {
       }
     );
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Server error during signup:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
@@ -78,18 +98,24 @@ router.post('/signup', async (req, res) => {
 router.post('/signin', async (req, res) => {
   const { email, password } = req.body;
   
+  console.log('Received signin request for email:', email);
+  
   try {
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('User not found with email:', email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
     
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      console.log('Password does not match for user:', email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
+    
+    console.log('User authenticated successfully:', email);
     
     // Create JWT token
     const payload = {
@@ -98,12 +124,19 @@ router.post('/signin', async (req, res) => {
       }
     };
     
+    // Use a default secret if JWT_SECRET is not defined
+    const jwtSecret = process.env.JWT_SECRET || 'fallback_jwt_secret_for_development';
+    
     jwt.sign(
       payload,
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: '7d' },
       (err, token) => {
-        if (err) throw err;
+        if (err) {
+          console.error('JWT sign error:', err);
+          throw err;
+        }
+        console.log('JWT token generated successfully');
         res.json({ 
           token,
           user: {
@@ -115,8 +148,8 @@ router.post('/signin', async (req, res) => {
       }
     );
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Server error during signin:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
@@ -125,11 +158,19 @@ router.post('/signin', async (req, res) => {
 // @access  Private
 router.get('/me', verifyToken, async (req, res) => {
   try {
+    console.log('Getting user profile for ID:', req.user.id);
     const user = await User.findById(req.user.id).select('-password');
+    
+    if (!user) {
+      console.log('User not found with ID:', req.user.id);
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    console.log('User profile retrieved successfully');
     res.json(user);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Server error getting user profile:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
