@@ -36,15 +36,25 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signUp = async (email, password, name) => {
-    const data = await signUpUser(email, password, name);
-    setCurrentUser(data.user);
-    return data;
+    try {
+      const data = await signUpUser(email, password, name);
+      setCurrentUser(data.user);
+      return data;
+    } catch (error) {
+      console.error('Sign up context error:', error);
+      throw error;
+    }
   };
 
   const signIn = async (email, password) => {
-    const data = await signInUser(email, password);
-    setCurrentUser(data.user);
-    return data;
+    try {
+      const data = await signInUser(email, password);
+      setCurrentUser(data.user);
+      return data;
+    } catch (error) {
+      console.error('Sign in context error:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {
