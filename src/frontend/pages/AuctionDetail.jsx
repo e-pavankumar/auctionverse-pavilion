@@ -79,6 +79,20 @@ const AuctionDetail = () => {
     return `${minutes}m remaining`;
   };
 
+  const handleBidPlaced = (amount) => {
+    const newBid = {
+      id: Date.now(),
+      amount,
+      bidder: 'currentUser', // In a real app, this would be the actual user
+      timestamp: new Date().toISOString(),
+    };
+    
+    setAuction(prev => ({
+      ...prev,
+      bids: [...(prev.bids || []), newBid],
+    }));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center">
@@ -181,8 +195,9 @@ const AuctionDetail = () => {
               </div>
               
               <BidForm 
-                auctionId={auction.id} 
+                auction={auction} 
                 currentBid={getHighestBid()} 
+                onBidPlaced={handleBidPlaced}
               />
             </div>
             
