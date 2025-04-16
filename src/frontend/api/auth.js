@@ -25,6 +25,7 @@ export const signUpUser = async (email, password, name) => {
     
     return response.data;
   } catch (error) {
+    console.error('Signup API error:', error);
     throw new Error(error.response?.data?.message || 'Failed to sign up');
   }
 };

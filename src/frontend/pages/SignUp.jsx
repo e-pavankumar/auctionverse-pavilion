@@ -36,6 +36,7 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
+      console.log('Attempting signup with:', { email: formData.email, name: formData.name });
       await signUp(formData.email, formData.password, formData.name);
       toast.success('Account created successfully');
       navigate('/');

@@ -56,6 +56,8 @@ export const signUpUser = async (email, password, name) => {
     name
   };
   
+  console.log('Creating new user:', { email, name, id: newUser.id });
+  
   // Add to mock database
   users.push(newUser);
   
