@@ -1,5 +1,6 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { signInUser, signUpUser, getCurrentUser, signOutUser } from '../frontend/api/auth';
 
 const AuthContext = createContext();
 
@@ -12,52 +13,42 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user exists in localStorage
-    const user = localStorage.getItem('user');
-    if (user) {
-      setCurrentUser(JSON.parse(user));
+    // Check if token exists in localStorage
+    const token = localStorage.getItem('token');
+    
+    if (token) {
+      // Try to get current user with the token
+      getCurrentUser()
+        .then(user => {
+          setCurrentUser(user);
+        })
+        .catch(error => {
+          console.error('Auth error:', error);
+          // If the token is invalid, remove it
+          localStorage.removeItem('token');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  const signUp = (email, password, name) => {
-    // In a real app, this would call an API
-    const newUser = { id: Date.now().toString(), email, name };
-    
-    // Store users in localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Check if email already exists
-    if (users.some(user => user.email === email)) {
-      throw new Error('Email already in use');
-    }
-    
-    // Add user to users array with password
-    users.push({ ...newUser, password });
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    // Set current user without password
-    localStorage.setItem('user', JSON.stringify(newUser));
-    setCurrentUser(newUser);
+  const signUp = async (email, password, name) => {
+    const data = await signUpUser(email, password, name);
+    setCurrentUser(data.user);
+    return data;
   };
 
-  const signIn = (email, password) => {
-    // Get users from localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (!user) {
-      throw new Error('Invalid email or password');
-    }
-    
-    // Store user without password
-    const { password: _, ...userWithoutPassword } = user;
-    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-    setCurrentUser(userWithoutPassword);
+  const signIn = async (email, password) => {
+    const data = await signInUser(email, password);
+    setCurrentUser(data.user);
+    return data;
   };
 
-  const signOut = () => {
-    localStorage.removeItem('user');
+  const signOut = async () => {
+    await signOutUser();
     setCurrentUser(null);
   };
 

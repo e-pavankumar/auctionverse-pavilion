@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { placeBid } from '../frontend/api/auctions';
 
 const BidForm = ({ auction, currentBid, onBidPlaced }) => {
   const [bidAmount, setBidAmount] = useState(currentBid + 1);
@@ -10,7 +11,7 @@ const BidForm = ({ auction, currentBid, onBidPlaced }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!currentUser) {
@@ -25,12 +26,15 @@ const BidForm = ({ auction, currentBid, onBidPlaced }) => {
     
     setIsSubmitting(true);
     
-    // Simulate bid submission
-    setTimeout(() => {
-      onBidPlaced(bidAmount);
+    try {
+      const updatedAuction = await placeBid(auction._id, bidAmount);
       toast.success('Your bid has been placed!');
+      onBidPlaced(updatedAuction);
+    } catch (error) {
+      toast.error(error.message || 'Failed to place bid');
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
   
   return (
